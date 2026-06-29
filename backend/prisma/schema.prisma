@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Season {
+  PRIMAVERA
+  VERAO
+  OUTONO
+  INVERNO
+  ANO_TODO
+}
+
+enum PlantCategory {
+  LEGUME
+  FRUTA
+  ERVA
+  FLOR
+  ARVORE
+}
+
+enum PlantStatus {
+  PLANTADA
+  CRESCENDO
+  PRONTA_COLHER
+  COLHIDA
+  MORTA
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  gardens   Garden[]
+}
+
+model Plant {
+  id             String        @id @default(cuid())
+  name           String
+  scientificName String?
+  emoji          String        @default("🌱")
+  description    String
+  category       PlantCategory
+  seasons        Season[]
+  harvestDays    Int?
+  wateringFreq   String
+  sunlight       String
+  tips           String?
+  createdAt      DateTime      @default(now())
+  gardenPlants   GardenPlant[]
+}
+
+model Garden {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plants      GardenPlant[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model GardenPlant {
+  id          String      @id @default(cuid())
+  gardenId    String
+  plantId     String
+  garden      Garden      @relation(fields: [gardenId], references: [id], onDelete: Cascade)
+  plant       Plant       @relation(fields: [plantId], references: [id])
+  status      PlantStatus @default(PLANTADA)
+  plantedAt   DateTime    @default(now())
+  harvestedAt DateTime?
+  notes       String?
+  quantity    Int         @default(1)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
